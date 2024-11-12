@@ -99,3 +99,29 @@ with st.container():
     st.plotly_chart(fig_todos)
 
 
+# Contenedor para la gráfica de todos los jugadores
+with st.container():
+    st.subheader("Evolución del Valor de Mercado de Todos los Jugadores")
+    
+    def graficar_todos_los_jugadores():
+        fig = go.Figure()
+        fechas = pd.date_range(fecha_inicio, fecha_hoy, freq='MS')
+        
+        for _, jugador in data.iterrows():
+            nombre_jugador = jugador['Nombre']
+            valor_inicial = jugador['Valor de Mercado en 01/01/2024']
+            valor_actual = jugador['Valor de Mercado Actual']
+            valores = [valor_inicial + (valor_actual - valor_inicial) * (i / (len(fechas) - 1)) for i in range(len(fechas))]
+            fig.add_trace(go.Bar(x=fechas, y=valores, name=nombre_jugador))
+        
+        fig.update_layout(title='Evolución del Valor de Mercado de Todos los Jugadores',
+                          xaxis_title='Fecha',
+                          yaxis_title='Valor de Mercado (€)',
+                          barmode='stack',
+                          xaxis=dict(tickformat="%Y-%m"))
+        
+        return fig
+
+    fig_todos = graficar_todos_los_jugadores()
+    st.plotly_chart(fig_todos)
+
