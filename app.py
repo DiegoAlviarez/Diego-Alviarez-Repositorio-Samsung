@@ -30,9 +30,9 @@ data = pd.read_csv(file_path)
 def convertir_valor(valor):
     if isinstance(valor, str):
         if "mil €" in valor:
-            return int(float(valor.replace(" mil €", "").replace(",", ".")) * 1_000)  # Convierte a euros completos
+            return int(float(valor.replace(" mil €", "").replace(",", ".")) * 1_000)
         elif "mill. €" in valor:
-            return int(float(valor.replace(" mill. €", "").replace(",", ".")) * 1_000_000)  # Convierte a euros completos
+            return int(float(valor.replace(" mill. €", "").replace(",", ".")) * 1_000_000)
     return None
 
 # Verificar y convertir las columnas de valores de mercado
@@ -44,6 +44,12 @@ if 'Valor de Mercado en 01/01/2024' in data.columns and 'Valor de Mercado Actual
 fecha_inicio = datetime(2024, 1, 1)
 fecha_hoy = datetime.today()
 
+# Contenedor para mostrar la tabla
+with st.container():
+    st.subheader("Datos de Jugadores")
+    st.write("Tabla de datos de los valores de mercado de los jugadores.")
+    st.dataframe(data)  # Mostrar el DataFrame en un contenedor separado
+
 # Contenedor para seleccionar un jugador y mostrar su gráfica
 with st.container():
     st.subheader("Evolución del Valor de Mercado de un Jugador")
@@ -51,19 +57,12 @@ with st.container():
 
     # Función para graficar el crecimiento en valor de mercado de un jugador
     def graficar_jugador(nombre_jugador):
-        # Filtrar al jugador
         jugador = data[data['Nombre'] == nombre_jugador]
-
         if not jugador.empty:
-            # Obtener valores inicial y actual
             valor_inicial = jugador['Valor de Mercado en 01/01/2024'].values[0]
             valor_actual = jugador['Valor de Mercado Actual'].values[0]
-
-            # Generar fechas mensuales desde el inicio hasta hoy
-            fechas = pd.date_range(fecha_inicio, fecha_hoy, freq='MS')  # 'MS' para inicio de cada mes
+            fechas = pd.date_range(fecha_inicio, fecha_hoy, freq='MS')
             valores = [valor_inicial + (valor_actual - valor_inicial) * (i / (len(fechas) - 1)) for i in range(len(fechas))]
-
-            # Crear la gráfica de barras
             fig = go.Figure(data=go.Bar(x=fechas, y=valores))
             fig.update_layout(title=f'Evolución del Valor de Mercado de {nombre_jugador}',
                               xaxis_title='Fecha',
@@ -74,7 +73,6 @@ with st.container():
             st.write("Jugador no encontrado.")
             return None
 
-    # Mostrar la gráfica de un jugador específico
     fig = graficar_jugador(nombre_jugador)
     if fig:
         st.plotly_chart(fig)
@@ -82,33 +80,22 @@ with st.container():
 # Contenedor para la gráfica de todos los jugadores
 with st.container():
     st.subheader("Evolución del Valor de Mercado de Todos los Jugadores")
-
-    # Función para graficar el crecimiento en valor de mercado de todos los jugadores
     def graficar_todos_los_jugadores():
         fig = go.Figure()
-
-        # Generar fechas mensuales desde el inicio hasta hoy
-        fechas = pd.date_range(fecha_inicio, fecha_hoy, freq='MS')  # 'MS' para inicio de cada mes
-
+        fechas = pd.date_range(fecha_inicio, fecha_hoy, freq='MS')
         for _, jugador in data.iterrows():
             nombre_jugador = jugador['Nombre']
             valor_inicial = jugador['Valor de Mercado en 01/01/2024']
             valor_actual = jugador['Valor de Mercado Actual']
-
-            # Generar valores de mercado interpolados
             valores = [valor_inicial + (valor_actual - valor_inicial) * (i / (len(fechas) - 1)) for i in range(len(fechas))]
-
-            # Añadir línea para el jugador en la gráfica
             fig.add_trace(go.Scatter(x=fechas, y=valores, mode='lines', name=nombre_jugador))
-
         fig.update_layout(title='Evolución del Valor de Mercado de Todos los Jugadores',
                           xaxis_title='Fecha',
                           yaxis_title='Valor de Mercado (€)',
                           xaxis=dict(tickformat="%Y-%m"))
-
         return fig
 
-    # Mostrar la gráfica de todos los jugadores
     fig_todos = graficar_todos_los_jugadores()
     st.plotly_chart(fig_todos)
+
 
