@@ -1,9 +1,9 @@
-# Importa las bibliotecas necesarias
 import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+from datetime import datetime
 import requests
 from streamlit_lottie import st_lottie
-import pandas as pd
-import plotly.express as px
 
 # Función para cargar animaciones Lottie desde una URL
 def load_lottieurl(url):
@@ -12,9 +12,9 @@ def load_lottieurl(url):
         return None
     return r.json()
 
-# Configuración del título y descripción de la aplicación
-st.title("Proyecto de Estadísticas de Jugadores")
-st.write("Este es un análisis interactivo de las estadísticas de los jugadores, mostrando sus valores de mercado.")
+# Configuración de la página
+st.title("Análisis de Estadísticas de Jugadores")
+st.write("Exploración interactiva de las estadísticas de jugadores basada en sus valores de mercado.")
 
 # Carga y muestra una animación Lottie
 lottie_url = "https://lottie.host/embed/3d48d4b9-51ad-4b7d-9d28-5e248cace11/Rz3QtSCq3.json"
@@ -24,14 +24,91 @@ if lottie_coding:
 
 # Cargar el archivo CSV desde GitHub
 file_path = 'https://raw.githubusercontent.com/AndersonP444/PROYECTO-SIC-JAKDG/main/valores_mercado_actualizados.csv'
-df = pd.read_csv(file_path)
+data = pd.read_csv(file_path)
 
-# Muestra la tabla de datos del CSV
-st.subheader("Tabla de Valores de Mercado")
-st.dataframe(df)
+# Función para convertir los valores de mercado a euros completos (enteros)
+def convertir_valor(valor):
+    if isinstance(valor, str):
+        if "mil €" in valor:
+            return int(float(valor.replace(" mil €", "").replace(",", ".")) * 1_000)  # Convierte a euros completos
+        elif "mill. €" in valor:
+            return int(float(valor.replace(" mill. €", "").replace(",", ".")) * 1_000_000)  # Convierte a euros completos
+    return None
 
-# Crear y mostrar un gráfico interactivo con Plotly basado en los datos del CSV
-st.subheader("Gráfico de Valor de Mercado")
-fig = px.bar(df, x='Jugador', y='Valor de Mercado', title="Valor de Mercado por Jugador")
-st.plotly_chart(fig)
+# Verificar y convertir las columnas de valores de mercado
+if 'Valor de Mercado en 01/01/2024' in data.columns and 'Valor de Mercado Actual' in data.columns:
+    data["Valor de Mercado en 01/01/2024"] = data["Valor de Mercado en 01/01/2024"].apply(convertir_valor)
+    data["Valor de Mercado Actual"] = data["Valor de Mercado Actual"].apply(convertir_valor)
+
+# Fecha de inicio y fecha actual
+fecha_inicio = datetime(2024, 1, 1)
+fecha_hoy = datetime.today()
+
+# Contenedor para seleccionar un jugador y mostrar su gráfica
+with st.container():
+    st.subheader("Evolución del Valor de Mercado de un Jugador")
+    nombre_jugador = st.selectbox("Selecciona un jugador:", data['Nombre'].unique())
+
+    # Función para graficar el crecimiento en valor de mercado de un jugador
+    def graficar_jugador(nombre_jugador):
+        # Filtrar al jugador
+        jugador = data[data['Nombre'] == nombre_jugador]
+
+        if not jugador.empty:
+            # Obtener valores inicial y actual
+            valor_inicial = jugador['Valor de Mercado en 01/01/2024'].values[0]
+            valor_actual = jugador['Valor de Mercado Actual'].values[0]
+
+            # Generar fechas mensuales desde el inicio hasta hoy
+            fechas = pd.date_range(fecha_inicio, fecha_hoy, freq='MS')  # 'MS' para inicio de cada mes
+            valores = [valor_inicial + (valor_actual - valor_inicial) * (i / (len(fechas) - 1)) for i in range(len(fechas))]
+
+            # Crear la gráfica de barras
+            fig = go.Figure(data=go.Bar(x=fechas, y=valores))
+            fig.update_layout(title=f'Evolución del Valor de Mercado de {nombre_jugador}',
+                              xaxis_title='Fecha',
+                              yaxis_title='Valor de Mercado (€)',
+                              xaxis=dict(tickformat="%Y-%m"))
+            return fig
+        else:
+            st.write("Jugador no encontrado.")
+            return None
+
+    # Mostrar la gráfica de un jugador específico
+    fig = graficar_jugador(nombre_jugador)
+    if fig:
+        st.plotly_chart(fig)
+
+# Contenedor para la gráfica de todos los jugadores
+with st.container():
+    st.subheader("Evolución del Valor de Mercado de Todos los Jugadores")
+
+    # Función para graficar el crecimiento en valor de mercado de todos los jugadores
+    def graficar_todos_los_jugadores():
+        fig = go.Figure()
+
+        # Generar fechas mensuales desde el inicio hasta hoy
+        fechas = pd.date_range(fecha_inicio, fecha_hoy, freq='MS')  # 'MS' para inicio de cada mes
+
+        for _, jugador in data.iterrows():
+            nombre_jugador = jugador['Nombre']
+            valor_inicial = jugador['Valor de Mercado en 01/01/2024']
+            valor_actual = jugador['Valor de Mercado Actual']
+
+            # Generar valores de mercado interpolados
+            valores = [valor_inicial + (valor_actual - valor_inicial) * (i / (len(fechas) - 1)) for i in range(len(fechas))]
+
+            # Añadir línea para el jugador en la gráfica
+            fig.add_trace(go.Scatter(x=fechas, y=valores, mode='lines', name=nombre_jugador))
+
+        fig.update_layout(title='Evolución del Valor de Mercado de Todos los Jugadores',
+                          xaxis_title='Fecha',
+                          yaxis_title='Valor de Mercado (€)',
+                          xaxis=dict(tickformat="%Y-%m"))
+
+        return fig
+
+    # Mostrar la gráfica de todos los jugadores
+    fig_todos = graficar_todos_los_jugadores()
+    st.plotly_chart(fig_todos)
 
