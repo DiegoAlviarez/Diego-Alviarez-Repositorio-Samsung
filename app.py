@@ -13,7 +13,7 @@ def load_lottieurl(url):
     return r.json()
 
 # Configuración de la página
-st.title("Análisis de Estadísticas de Jugadores")
+st.title("ANÁLISIS DE LAS ESTADÍSTICAS QUE TIENEN MAYOR CORRELACIÓN CON EL VALOR DE MERCADO DE LOS JUGADORES DE FUTBOL EN ESPAÑA.")
 st.write("Exploración interactiva de las estadísticas de jugadores basada en sus valores de mercado.")
 
 # Carga y muestra una animación Lottie
