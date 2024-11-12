@@ -13,14 +13,23 @@ def load_lottieurl(url):
     return r.json()
 
 # Configuración de la página
-st.title("ANÁLISIS DE LAS ESTADÍSTICAS QUE TIENEN MAYOR CORRELACIÓN CON EL VALOR DE MERCADO DE LOS JUGADORES DE FUTBOL EN ESPAÑA.")
-st.write("Exploración interactiva de las estadísticas de jugadores basada en sus valores de mercado.")
+with st.container():
+    st.set_page_config(page_title="Análisis de Estadísticas de Jugadores", page_icon="⚽️", layout="wide")
+    st.title("ANÁLISIS DE LAS ESTADÍSTICAS QUE TIENEN MAYOR CORRELACIÓN CON EL VALOR DE MERCADO DE LOS JUGADORES DE FUTBOL EN ESPAÑA.")
+    st.write("Exploración interactiva de las estadísticas de jugadores basada en sus valores de mercado.")
 
-# Carga y muestra una animación Lottie
-lottie_url = "https://lottie.host/embed/3d48d4b9-51ad-4b7d-9d28-5e248cace11/Rz3QtSCq3.json"
-lottie_coding = load_lottieurl(lottie_url)
-if lottie_coding:
-    st_lottie(lottie_coding, height=200, width=300)
+
+with st.container():
+    st.write("---")
+    st.header("Introducción")
+    st.write("""
+        
+        La industria del fútbol ha evolucionado significativamente, convirtiéndose en un mercado donde el valor de los jugadores es un indicador crucial de su desempeño y potencial.
+
+Este proyecto se centra en el análisis de datos de jugadores de la liga 2024, utilizando un archivo CSV que contiene información sobre el valor de mercado de cada jugador.
+        
+        """)
+    st.write("[Ver código fuente](https://github.com/AndersonP444/PROYECTO-SIC-JAKDG)")
 
 # Cargar el archivo CSV desde GitHub
 file_path = 'https://raw.githubusercontent.com/AndersonP444/PROYECTO-SIC-JAKDG/main/valores_mercado_actualizados.csv'
