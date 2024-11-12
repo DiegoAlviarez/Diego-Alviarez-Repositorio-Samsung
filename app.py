@@ -79,7 +79,7 @@ with st.container():
 
 # Contenedor para la gráfica de todos los jugadores
 with st.container():
-    st.subheader("Evolución del Valor de Mercado de Todos los Jugadores")
+    st.subheader("Evolución del Porcentaje de Mercado de Todos los Jugadores")
     def graficar_todos_los_jugadores():
         fig = go.Figure()
         fechas = pd.date_range(fecha_inicio, fecha_hoy, freq='MS')
@@ -89,7 +89,7 @@ with st.container():
             valor_actual = jugador['Valor de Mercado Actual']
             valores = [valor_inicial + (valor_actual - valor_inicial) * (i / (len(fechas) - 1)) for i in range(len(fechas))]
             fig.add_trace(go.Scatter(x=fechas, y=valores, mode='lines', name=nombre_jugador))
-        fig.update_layout(title='Evolución del Valor de Mercado de Todos los Jugadores',
+        fig.update_layout(title='Evolución del Porcentaje de Mercado de Todos los Jugadores',
                           xaxis_title='Fecha',
                           yaxis_title='Valor de Mercado (€)',
                           xaxis=dict(tickformat="%Y-%m"))
