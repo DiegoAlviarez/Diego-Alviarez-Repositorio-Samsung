@@ -1,3 +1,4 @@
+# Importa las bibliotecas necesarias
 import streamlit as st
 import requests
 from streamlit_lottie import st_lottie
@@ -21,18 +22,16 @@ lottie_coding = load_lottieurl(lottie_url)
 if lottie_coding:
     st_lottie(lottie_coding, height=200, width=300)
 
-# Crear algunos datos de ejemplo para la tabla
-data = {
-    'Jugador': ['Jugador A', 'Jugador B', 'Jugador C'],
-    'Valor de Mercado': [10, 15, 8]
-}
-df = pd.DataFrame(data)
+# Cargar el archivo CSV desde GitHub
+file_path = 'https://raw.githubusercontent.com/AndersonP444/PROYECTO-SIC-JAKDG/main/valores_mercado_actualizados.csv'
+df = pd.read_csv(file_path)
 
-# Muestra una tabla en Streamlit
+# Muestra la tabla de datos del CSV
 st.subheader("Tabla de Valores de Mercado")
-st.table(df)
+st.dataframe(df)
 
-# Crear y mostrar un gráfico interactivo con Plotly
+# Crear y mostrar un gráfico interactivo con Plotly basado en los datos del CSV
 st.subheader("Gráfico de Valor de Mercado")
 fig = px.bar(df, x='Jugador', y='Valor de Mercado', title="Valor de Mercado por Jugador")
 st.plotly_chart(fig)
+
